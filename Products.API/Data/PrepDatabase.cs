@@ -4,7 +4,7 @@ namespace Products.API.Data
 {
     public static class PrepDatabase
     {
-        public static void PrePopulation(IApplicationBuilder builder)
+        public static void PrePopulation(this IApplicationBuilder builder)
         {
             using (var serviceScope = builder.ApplicationServices.CreateScope())
             {
