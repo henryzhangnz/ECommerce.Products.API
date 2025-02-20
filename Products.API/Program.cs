@@ -19,6 +19,16 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                // Read token from cookie
+                context.Token = context.Request.Cookies["authToken"];
+                return Task.CompletedTask;
+            }
+        };
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -43,8 +53,9 @@ builder.Services.AddScoped<IProductRepo, ProductRepo>();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalhost", builder =>
-        builder.AllowAnyOrigin()
+    options.AddPolicy("AllowFrontend", builder =>
+        builder.WithOrigins("http://localhost:4200", "http://localhost:88")
+               .AllowCredentials()
                .AllowAnyMethod()
                .AllowAnyHeader());
 });
@@ -92,7 +103,7 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-app.UseCors("AllowLocalhost");
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 
