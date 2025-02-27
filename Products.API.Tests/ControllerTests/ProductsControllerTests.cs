@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Products.API.Controllers;
+using Products.API.MessageBus;
 using Products.API.Models;
 using Products.API.Repositories;
 
@@ -11,13 +12,17 @@ namespace Products.API.Tests.ControllerTests
     {
         private readonly Mock<IProductRepo> _productRepoMock;
         private readonly Mock<IMapper> _mapperMock;
+        private readonly Mock<IMessagePublisher> _messagePublisherMock;
         private readonly ProductsController _productsController;
 
         public ProductsControllerTests()
         {
             _productRepoMock = new Mock<IProductRepo>();
             _mapperMock = new Mock<IMapper>();
-            _productsController = new ProductsController(_productRepoMock.Object, _mapperMock.Object);
+            _messagePublisherMock = new Mock<IMessagePublisher>();
+            _productsController = new ProductsController(_productRepoMock.Object,
+                                                        _mapperMock.Object,
+                                                        _messagePublisherMock.Object);
         }
 
         [Fact]
@@ -45,7 +50,8 @@ namespace Products.API.Tests.ControllerTests
                 },
             };
 
-            var productPaginated = new ProductPaginated() {
+            var productPaginated = new ProductPaginated()
+            {
                 Products = products,
                 Page = 1,
                 TotalItems = 2,

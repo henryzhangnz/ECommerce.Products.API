@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Products.API.Data;
+using Products.API.EventProcessor;
+using Products.API.MessageBus;
 using Products.API.Middlewares;
 using Products.API.Profiles;
 using Products.API.Repositories;
@@ -15,6 +17,10 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+builder.Services.AddSingleton<IMessagePublisher, MessagePublisher>();
+builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
+builder.Services.AddHostedService<MessageBusClient>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -54,7 +60,7 @@ builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", builder =>
-        builder.WithOrigins("http://localhost:4200", "http://localhost", "http://ecommerce.com")
+        builder.WithOrigins("http://localhost:4200", "http://localhost:88", "http://ecommerce.com")
                .AllowCredentials()
                .AllowAnyMethod()
                .AllowAnyHeader());
